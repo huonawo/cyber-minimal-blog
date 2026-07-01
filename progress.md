@@ -94,3 +94,20 @@
 ### Notes
 - Changed files: `src/worker.js` separates missing-secret errors; `progress.md` records the Cloudflare secret configuration and verification.
 - Rollback: remove the `BLOG_UPLOAD_PASSWORD` secret from Cloudflare Pages production, revert the next Git commit, and redeploy.
+
+## 2026-07-01 - Task: Enable complete upload publishing
+### What was done
+- Configured the Cloudflare Pages production `BLOG_GITHUB_TOKEN` secret so the upload API can write article files to GitHub.
+- Configured the GitHub repository `CLOUDFLARE_API_TOKEN` Actions Secret so uploaded articles can trigger an automated build and Cloudflare Pages deployment.
+- Ran a real Markdown-plus-image upload through `/api/upload`, verified GitHub received the files, then removed the draft smoke-test article from the repository.
+
+### Testing
+- `npm run deploy` passed after Cloudflare upload secrets were configured.
+- Posting a draft Markdown article plus SVG image to `/api/upload` with the configured upload password returned 200 and created a GitHub commit.
+- The GitHub Actions run for the upload commit completed successfully.
+- The cleanup commit removing the smoke-test draft completed successfully and its GitHub Actions run also completed successfully.
+- `https://null-observatory.pages.dev/upload/` returned 200 after the final deployment.
+
+### Notes
+- Changed files: `progress.md` records full upload publishing verification; `src/worker.js` remains the deployed upload API with separate missing-secret errors.
+- Rollback: remove `BLOG_GITHUB_TOKEN` and `BLOG_UPLOAD_PASSWORD` from Cloudflare Pages production, remove `CLOUDFLARE_API_TOKEN` from GitHub Actions Secrets, revert the upload API commit, and redeploy.
