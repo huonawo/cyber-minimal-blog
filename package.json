@@ -9,6 +9,6 @@
     "preview": "node scripts/build.mjs && npx wrangler pages dev dist",
     "sync:assets": "node scripts/sync-post-assets.mjs",
     "import:docx": "node scripts/import-docx.mjs",
-    "deploy": "node scripts/build.mjs && npx wrangler pages deploy dist --project-name null-observatory"
+    "deploy": "node scripts/build.mjs && node scripts/deploy-cloudflare-api.mjs"
   }
 }

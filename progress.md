@@ -27,3 +27,20 @@
 ### Notes
 - Changed files: `package.json` now uses the zero-dependency Node generator scripts; `scripts/build.mjs`, `scripts/content.mjs`, and `scripts/import-docx.mjs` implement static generation and DOCX import; `src/styles/global.css` fixes overlay and responsive behavior; `src/data/site.js` stores editable site identity.
 - Rollback: restore the previous Astro-based files from a prior commit, or remove the generated project files if rolling back before the first commit.
+
+## 2026-07-01 - Task: Deploy Null Observatory to Cloudflare Pages
+### What was done
+- Deployed the production `dist/` build to Cloudflare Pages project `null-observatory`.
+- Confirmed the GitHub remote repository is `https://github.com/huonawo/cyber-minimal-blog.git`.
+- Added a zero-dependency Cloudflare API deployment script so `npm run deploy` can publish without relying on a stalled local package install.
+- Confirmed the Pages custom domain entry for `huonawo.cc.cd` exists, but DNS verification remains pending because the current Cloudflare token has zone read permission only.
+
+### Testing
+- `npm run build` passed and generated 5 posts into `dist/`.
+- `npm run deploy` passed and deployed 33 files to `https://12df9e9c.null-observatory.pages.dev`.
+- HTTP checks returned 200 for the deployed homepage, DOCX article page, and `search.json` on the Pages preview domain.
+- Cloudflare Pages domain status check returned `pending` with `CNAME record not set`; DNS record lookup failed because the token lacks DNS edit/read API permission for records.
+
+### Notes
+- Changed files: `package.json` switches `npm run deploy` to the Cloudflare API uploader; `scripts/deploy-cloudflare-api.mjs` uploads `dist/` files to Pages; `docs/content-workflow.md` documents the `CLOUDFLARE_API_TOKEN` requirement; `progress.md` records this deployment round.
+- Rollback: revert the next Git commit for source changes, or use Cloudflare Pages deployment history to roll back from the `null-observatory` project dashboard.

@@ -50,4 +50,4 @@ npm run build
 npm run deploy
 ```
 
-Cloudflare Pages 项目名为 `null-observatory`，自定义域名为 `huonawo.cc.cd`。
+部署脚本使用 Cloudflare API 直传 `dist/`，需要本机或 CI 中存在 `CLOUDFLARE_API_TOKEN`。Cloudflare Pages 项目名为 `null-observatory`，自定义域名为 `huonawo.cc.cd`。
