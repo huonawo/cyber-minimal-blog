@@ -39,6 +39,11 @@ function extension(name) {
   return match?.[0] ?? '';
 }
 
+function imageBasename(src) {
+  const clean = String(src).split(/[?#]/)[0].replaceAll('\\', '/');
+  return cleanFilename(clean.split('/').pop() || '');
+}
+
 function yamlString(value) {
   return `"${String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
@@ -57,6 +62,27 @@ function hasFrontmatter(markdown) {
 function frontmatter(metadata, source) {
   const tags = metadata.tags.map(yamlString).join(', ');
   return `---\ntitle: ${yamlString(metadata.title)}\ndate: ${metadata.date}\ncategory: ${yamlString(metadata.category)}\ntags: [${tags}]\nsummary: ${yamlString(metadata.summary)}\nsource: "${source}"\n---\n\n`;
+}
+
+function rewriteMarkdownImageRefs(markdown, images) {
+  const imageNames = new Map(images.map((image) => [cleanFilename(image.name).toLowerCase(), cleanFilename(image.name)]));
+  let rewritten = markdown;
+  let count = 0;
+  const refs = [
+    ...markdown.matchAll(/!\[[^\]]*]\(([^)]+)\)/g),
+    ...markdown.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)
+  ];
+
+  for (const match of refs) {
+    const src = String(match[1]).trim().replace(/^<|>$/g, '');
+    if (/^(https?:|data:|#)/i.test(src)) continue;
+    const name = imageNames.get(imageBasename(src).toLowerCase());
+    if (!name) continue;
+    rewritten = rewritten.split(src).join(`./${name}`);
+    count += 1;
+  }
+
+  return { markdown: rewritten, count };
 }
 
 async function fileToBase64(file) {
@@ -202,7 +228,8 @@ async function handleUpload(request, env) {
     });
   } else {
     const raw = await article.text();
-    const body = hasFrontmatter(raw) ? raw : `${frontmatter(metadata, 'markdown')}${raw}`;
+    const rewritten = rewriteMarkdownImageRefs(raw, images);
+    const body = hasFrontmatter(rewritten.markdown) ? rewritten.markdown : `${frontmatter(metadata, 'markdown')}${rewritten.markdown}`;
     files.push({
       path: `${basePath}/index.md`,
       content: body,

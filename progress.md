@@ -111,3 +111,25 @@
 ### Notes
 - Changed files: `progress.md` records full upload publishing verification; `src/worker.js` remains the deployed upload API with separate missing-secret errors.
 - Rollback: remove `BLOG_GITHUB_TOKEN` and `BLOG_UPLOAD_PASSWORD` from Cloudflare Pages production, remove `CLOUDFLARE_API_TOKEN` from GitHub Actions Secrets, revert the upload API commit, and redeploy.
+
+## 2026-07-01 - Task: Auto-detect Markdown upload images
+### What was done
+- Added Markdown image scanning on the upload page before submission.
+- Added automatic extraction for `data:image/...` base64 images embedded in Markdown.
+- Added an authorized folder-picker flow so Markdown references pointing to local cache paths can be matched by filename and uploaded as same-folder article images.
+- Rewrote matched local Markdown image references to `./image-name` before sending the article to the upload API.
+- Added a server-side fallback that rewrites Markdown image references by uploaded image filename, so direct API uploads also avoid preserving local cache paths.
+
+### Testing
+- `node --check public/scripts/site.js` passed.
+- `node --check src/worker.js` passed.
+- `npm run build` passed and generated 5 posts into `dist/`.
+- `npm run deploy` passed and deployed the updated upload page plus Worker bundle to Cloudflare Pages.
+- `https://null-observatory.pages.dev/upload/` returned 200 and contained the new image-directory matching UI and auto-extraction copy.
+- Uploaded `D:\文档\XXE.md` with three `C:\Users\huonawo\AppData\Local\Temp\*.png` image references; the upload API returned 200 and GitHub Actions completed successfully.
+- `https://null-observatory.pages.dev/posts/xxe/` and all three `post-assets/xxe/*.png` image URLs returned 200.
+- The GitHub Markdown for `content/posts/xxe/index.md` no longer contains `C:\` or `AppData` and contains relative `./178282*.png` image paths.
+
+### Notes
+- Changed files: `scripts/build.mjs` adds the upload page controls; `public/scripts/site.js` scans and rewrites Markdown image references before upload; `src/worker.js` rewrites direct-upload Markdown image references by uploaded filename; `src/styles/global.css` styles the matching controls; `docs/content-workflow.md` documents browser limits and the new Markdown image handling behavior; `progress.md` records this round.
+- Rollback: revert the next Git commit and redeploy; existing manual image upload and DOCX upload behavior will remain available from the previous deployed version.

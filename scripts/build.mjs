@@ -196,6 +196,11 @@ function upload() {
       <label><span>上传密码</span><input name="password" type="password" autocomplete="current-password" required></label>
       <label class="file-drop"><span>文章文件</span><input name="article" type="file" accept=".md,.markdown,.docx" required><b data-article-file>选择 Markdown 或 DOCX</b></label>
       <label class="file-drop"><span>Markdown 图片</span><input name="images" type="file" accept="image/*" multiple><b data-image-files>可多选与 Markdown 同目录的图片</b></label>
+      <div class="upload-tools">
+        <button type="button" data-pick-image-dir>选择图片目录匹配</button>
+        <input data-image-folder type="file" accept="image/*" webkitdirectory multiple hidden>
+        <p data-image-report>Markdown 图片会在提交前自动扫描；内嵌 base64 图片会自动提取。</p>
+      </div>
       <button class="upload-submit" type="submit">提交上传</button>
       <output class="upload-output" data-upload-output>等待文件输入。</output>
     </form>

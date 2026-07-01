@@ -24,6 +24,11 @@ https://null-observatory.pages.dev/upload/
 
 上传页支持 Markdown、DOCX 和 Markdown 同目录图片。上传功能需要先在 Cloudflare Pages 环境变量里配置：
 
+Markdown 上传时会自动扫描正文图片引用：
+- `data:image/...` 内嵌图片会被自动提取成同目录图片文件。
+- 相对路径或本地缓存路径图片，需要在上传页点击“选择图片目录匹配”，浏览器授权后会按文件名自动匹配并把正文引用改成 `./图片名`。
+- 浏览器不能直接读取未授权的本机绝对路径；这是系统安全限制，不是博客功能限制。
+
 ```text
 BLOG_UPLOAD_PASSWORD=<上传页密码>
 BLOG_GITHUB_TOKEN=<可写入 huonawo/cyber-minimal-blog 的 GitHub token>
