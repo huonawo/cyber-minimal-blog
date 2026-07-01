@@ -1,0 +1,14 @@
+{
+  "name": "null-observatory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "preview": "node scripts/build.mjs && npx wrangler pages dev dist",
+    "sync:assets": "node scripts/sync-post-assets.mjs",
+    "import:docx": "node scripts/import-docx.mjs",
+    "deploy": "node scripts/build.mjs && npx wrangler pages deploy dist --project-name null-observatory"
+  }
+}
