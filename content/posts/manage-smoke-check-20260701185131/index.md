@@ -6,6 +6,7 @@ tags: ["管理"]
 summary: "用于验证归档和删除功能。"
 draft: true
 source: "markdown"
+archived: true
 ---
 
 ## 管理验证
