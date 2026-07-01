@@ -29,11 +29,15 @@ BLOG_UPLOAD_PASSWORD=<上传页密码>
 BLOG_GITHUB_TOKEN=<可写入 huonawo/cyber-minimal-blog 的 GitHub token>
 ```
 
+`BLOG_GITHUB_TOKEN` 建议使用 GitHub fine-grained personal access token，只给 `huonawo/cyber-minimal-blog` 仓库的 `Contents: Read and write` 权限。
+
 GitHub Actions 自动部署还需要在 GitHub 仓库 Secrets 中配置：
 
 ```text
 CLOUDFLARE_API_TOKEN=<Cloudflare Pages 部署 token>
 ```
+
+如果这个 GitHub Secret 缺失，上传的文章会进入 GitHub，但自动部署步骤会失败，需要补 Secret 后重新运行 Actions。
 
 ## Markdown 文章
 
