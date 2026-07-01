@@ -79,3 +79,18 @@
 ### Notes
 - Changed files: `src/data/site.js` adds the upload nav item; `scripts/build.mjs` generates `/upload/` and copies `_worker.js`; `src/worker.js` implements the protected upload API; `public/scripts/site.js` handles upload form submission; `src/styles/global.css` styles the upload UI; `.github/workflows/deploy.yml` adds automated build/deploy; `scripts/import-docx.mjs` reads uploaded DOCX metadata; `package.json` deploys with a Wrangler wrapper; `docs/content-workflow.md`, `README.md`, and `content/posts/README.md` document the upload path and required secrets; `scripts/deploy-cloudflare-api.mjs` now delegates to Wrangler so Pages Functions are deployed.
 - Rollback: revert the next Git commit and redeploy; if only disabling uploads, remove `BLOG_UPLOAD_PASSWORD` and `BLOG_GITHUB_TOKEN` from Cloudflare Pages environment variables so `/api/upload` keeps rejecting writes.
+
+## 2026-07-01 - Task: Configure upload password
+### What was done
+- Configured the Cloudflare Pages production `BLOG_UPLOAD_PASSWORD` secret for the upload page.
+- Redeployed the site so the Pages Worker can read the new production secret.
+- Split upload API configuration errors so missing password and missing GitHub token are reported separately.
+
+### Testing
+- `npm run deploy` passed and deployed the static assets plus Worker bundle to Cloudflare Pages.
+- `https://null-observatory.pages.dev/upload/` returned 200.
+- Posting to `/api/upload` with the configured upload password still returned 503 because `BLOG_GITHUB_TOKEN` is not configured yet, confirming the remaining blocker is GitHub write access rather than the upload password.
+
+### Notes
+- Changed files: `src/worker.js` separates missing-secret errors; `progress.md` records the Cloudflare secret configuration and verification.
+- Rollback: remove the `BLOG_UPLOAD_PASSWORD` secret from Cloudflare Pages production, revert the next Git commit, and redeploy.

@@ -139,8 +139,11 @@ async function commitFiles(env, files, message) {
 }
 
 async function handleUpload(request, env) {
-  if (!env.BLOG_UPLOAD_PASSWORD || !env.BLOG_GITHUB_TOKEN) {
-    return json({ ok: false, message: '上传功能还未配置 BLOG_UPLOAD_PASSWORD 或 BLOG_GITHUB_TOKEN。' }, 503);
+  if (!env.BLOG_UPLOAD_PASSWORD) {
+    return json({ ok: false, message: '上传功能还未配置 BLOG_UPLOAD_PASSWORD。' }, 503);
+  }
+  if (!env.BLOG_GITHUB_TOKEN) {
+    return json({ ok: false, message: '上传功能还未配置 BLOG_GITHUB_TOKEN。' }, 503);
   }
   const provided = request.headers.get('x-blog-upload-password') ?? '';
   if (provided !== env.BLOG_UPLOAD_PASSWORD) {
