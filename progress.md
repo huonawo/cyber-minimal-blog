@@ -44,3 +44,19 @@
 ### Notes
 - Changed files: `package.json` switches `npm run deploy` to the Cloudflare API uploader; `scripts/deploy-cloudflare-api.mjs` uploads `dist/` files to Pages; `docs/content-workflow.md` documents the `CLOUDFLARE_API_TOKEN` requirement; `progress.md` records this deployment round.
 - Rollback: revert the next Git commit for source changes, or use Cloudflare Pages deployment history to roll back from the `null-observatory` project dashboard.
+
+## 2026-07-01 - Task: Switch to Cloudflare Pages default domain
+### What was done
+- Changed the site canonical domain from `https://huonawo.cc.cd` to `https://null-observatory.pages.dev`.
+- Removed the pending `huonawo.cc.cd` custom domain binding from the Cloudflare Pages project.
+- Added clear upload-location documentation so Markdown, DOCX, and article images can be placed in the correct repository folder.
+
+### Testing
+- `npm run build` passed and generated 5 posts into `dist/`.
+- `npm run deploy` passed and deployed 33 files to Cloudflare Pages.
+- HTTP checks returned 200 for `https://null-observatory.pages.dev/`, the DOCX sample article page, and `search.json`.
+- Cloudflare Pages domain list returned an empty custom domain list after deleting `huonawo.cc.cd`.
+
+### Notes
+- Changed files: `src/data/site.js` updates the canonical site domain; `docs/content-workflow.md` documents the upload folder and Pages default domain; `README.md` lists the live URL and article upload location; `content/posts/README.md` marks the exact article folder convention; `progress.md` records this round.
+- Rollback: revert the next Git commit and redeploy, or re-add `huonawo.cc.cd` in Cloudflare Pages custom domains if that hostname is needed later.

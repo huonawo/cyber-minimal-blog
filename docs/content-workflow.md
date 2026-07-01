@@ -1,5 +1,21 @@
 # 内容与部署说明
 
+## 上传文章的位置
+
+这个站点没有网页后台上传按钮。文章文件直接放在仓库目录：
+
+```text
+content/posts/
+```
+
+在本机就是：
+
+```text
+F:\新建文件夹 (2)\content\posts
+```
+
+放好文章后运行 `npm run build` 检查，再运行 `npm run deploy` 发布到 Cloudflare Pages。
+
 ## Markdown 文章
 
 每篇文章使用一个同名目录：
@@ -50,4 +66,4 @@ npm run build
 npm run deploy
 ```
 
-部署脚本使用 Cloudflare API 直传 `dist/`，需要本机或 CI 中存在 `CLOUDFLARE_API_TOKEN`。Cloudflare Pages 项目名为 `null-observatory`，自定义域名为 `huonawo.cc.cd`。
+部署脚本使用 Cloudflare API 直传 `dist/`，需要本机或 CI 中存在 `CLOUDFLARE_API_TOKEN`。Cloudflare Pages 项目名为 `null-observatory`，正式访问域名为 `https://null-observatory.pages.dev`。
