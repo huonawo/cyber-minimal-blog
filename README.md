@@ -6,6 +6,8 @@
 
 文章上传位置：`content/posts/`
 
+线上上传页：`https://null-observatory.pages.dev/upload/`
+
 ## 常用命令
 
 ```bash

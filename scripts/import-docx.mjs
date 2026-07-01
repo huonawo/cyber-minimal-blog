@@ -27,6 +27,10 @@ function yamlString(value) {
   return `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
 
+function yamlArray(values) {
+  return `[${values.map(yamlString).join(', ')}]`;
+}
+
 function xmlText(value) {
   return String(value)
     .replace(/&lt;/g, '<')
@@ -129,6 +133,22 @@ async function copyImages(unpackedDir, postDir) {
   return copied;
 }
 
+async function readUploadMetadata(postDir) {
+  try {
+    const raw = await fs.readFile(path.join(postDir, 'upload.json'), 'utf8');
+    const data = JSON.parse(raw);
+    return {
+      title: typeof data.title === 'string' ? data.title : '',
+      date: typeof data.date === 'string' ? data.date : '',
+      category: typeof data.category === 'string' ? data.category : '',
+      tags: Array.isArray(data.tags) ? data.tags.map(String).filter(Boolean) : [],
+      summary: typeof data.summary === 'string' ? data.summary : ''
+    };
+  } catch {
+    return {};
+  }
+}
+
 const args = parseArgs(process.argv.slice(2));
 if (!args.input) {
   console.error('Usage: npm run import:docx -- <file.docx> --slug <slug> [--title <title>]');
@@ -137,8 +157,9 @@ if (!args.input) {
 
 const absoluteInput = path.resolve(args.input);
 const slug = args.slug || toSlug(path.basename(absoluteInput));
-const title = args.title || path.basename(absoluteInput).replace(/\.[^.]+$/, '');
 const postDir = path.resolve('content/posts', slug);
+const uploadMetadata = await readUploadMetadata(postDir);
+const title = args.title || uploadMetadata.title || path.basename(absoluteInput).replace(/\.[^.]+$/, '');
 const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'null-observatory-docx-'));
 
 await fs.mkdir(postDir, { recursive: true });
@@ -160,12 +181,16 @@ const paragraphs = [...documentXml.matchAll(/<w:p\b[^>]*>(.*?)<\/w:p>/gs)]
   .filter(Boolean);
 
 const today = new Date().toISOString().slice(0, 10);
+const date = uploadMetadata.date || today;
+const category = uploadMetadata.category || '技术';
+const tagList = uploadMetadata.tags?.length ? uploadMetadata.tags : ['DOCX', '写作'];
+const summary = uploadMetadata.summary || `从 ${path.basename(absoluteInput)} 导入的文章，图片已抽取到同名目录。`;
 const body = `---
 title: ${yamlString(title)}
-date: ${today}
-category: "技术"
-tags: ["DOCX", "写作"]
-summary: ${yamlString(`从 ${path.basename(absoluteInput)} 导入的文章，图片已抽取到同名目录。`)}
+date: ${date}
+category: ${yamlString(category)}
+tags: ${yamlArray(tagList)}
+summary: ${yamlString(summary)}
 source: "docx"
 ---
 

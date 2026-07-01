@@ -2,7 +2,7 @@
 
 ## 上传文章的位置
 
-这个站点没有网页后台上传按钮。文章文件直接放在仓库目录：
+可以直接把文章文件放进仓库目录：
 
 ```text
 content/posts/
@@ -15,6 +15,25 @@ F:\新建文件夹 (2)\content\posts
 ```
 
 放好文章后运行 `npm run build` 检查，再运行 `npm run deploy` 发布到 Cloudflare Pages。
+
+也可以打开线上上传页提交文章：
+
+```text
+https://null-observatory.pages.dev/upload/
+```
+
+上传页支持 Markdown、DOCX 和 Markdown 同目录图片。上传功能需要先在 Cloudflare Pages 环境变量里配置：
+
+```text
+BLOG_UPLOAD_PASSWORD=<上传页密码>
+BLOG_GITHUB_TOKEN=<可写入 huonawo/cyber-minimal-blog 的 GitHub token>
+```
+
+GitHub Actions 自动部署还需要在 GitHub 仓库 Secrets 中配置：
+
+```text
+CLOUDFLARE_API_TOKEN=<Cloudflare Pages 部署 token>
+```
 
 ## Markdown 文章
 
@@ -66,4 +85,4 @@ npm run build
 npm run deploy
 ```
 
-部署脚本使用 Cloudflare API 直传 `dist/`，需要本机或 CI 中存在 `CLOUDFLARE_API_TOKEN`。Cloudflare Pages 项目名为 `null-observatory`，正式访问域名为 `https://null-observatory.pages.dev`。
+部署脚本使用 Wrangler 发布 `dist/`，这样 Cloudflare Pages 可以同时部署静态文件和上传 API。运行环境需要存在 `CLOUDFLARE_API_TOKEN`。Cloudflare Pages 项目名为 `null-observatory`，正式访问域名为 `https://null-observatory.pages.dev`。

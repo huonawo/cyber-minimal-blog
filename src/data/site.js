@@ -8,6 +8,7 @@ export const site = {
     { label: '首页', href: '/' },
     { label: '归档', href: '/archive/' },
     { label: '标签', href: '/tags/' },
+    { label: '上传', href: '/upload/' },
     { label: '关于', href: '/about/' }
   ],
   socials: [

@@ -262,6 +262,12 @@ pre {
   transform: rotate(45deg);
 }
 
+.nav-upload {
+  border-left: 0;
+  border-right: 0;
+  transform: rotate(90deg);
+}
+
 .nav-info {
   border-radius: 50%;
 }
@@ -799,6 +805,116 @@ pre {
   background: rgba(156, 242, 255, 0.04);
 }
 
+.upload-page {
+  max-width: 980px;
+  padding: 68px clamp(22px, 6vw, 90px) 90px;
+}
+
+.upload-head p {
+  margin: 0 0 12px;
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.upload-head h1 {
+  margin: 0 0 30px;
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1.1;
+  font-weight: 520;
+}
+
+.upload-form {
+  display: grid;
+  gap: 16px;
+  border: 1px solid var(--line);
+  padding: clamp(18px, 3vw, 28px);
+  background: rgba(6, 14, 20, 0.68);
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.upload-form label {
+  display: grid;
+  gap: 8px;
+}
+
+.upload-form label span {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.upload-form input,
+.upload-form textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(144, 225, 255, 0.2);
+  background: rgba(2, 6, 10, 0.72);
+  color: var(--text);
+  padding: 12px 13px;
+  font: 15px var(--sans);
+  outline: none;
+}
+
+.upload-form input:focus,
+.upload-form textarea:focus {
+  border-color: var(--line-strong);
+  box-shadow: 0 0 0 3px rgba(156, 242, 255, 0.08);
+}
+
+.file-drop {
+  border: 1px dashed rgba(156, 242, 255, 0.34);
+  padding: 16px;
+  background: rgba(156, 242, 255, 0.04);
+  cursor: pointer;
+}
+
+.file-drop input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
+
+.file-drop b {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.upload-submit {
+  width: fit-content;
+  border: 1px solid var(--line-strong);
+  background: rgba(156, 242, 255, 0.08);
+  color: var(--cyan);
+  padding: 12px 18px;
+  font: 14px var(--mono);
+  cursor: pointer;
+}
+
+.upload-submit:hover {
+  background: rgba(156, 242, 255, 0.14);
+}
+
+.upload-submit:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.upload-output {
+  min-height: 46px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
 .search-overlay {
   position: fixed;
   inset: 0;
@@ -941,6 +1057,7 @@ pre {
   .home-intro h1,
   .listing-page h1,
   .about-page h1,
+  .upload-head h1,
   .article-head h1 {
     max-width: 340px;
     font-size: 30px;
@@ -954,6 +1071,7 @@ pre {
   .home-intro h1,
   .listing-page h1,
   .about-page h1,
+  .upload-head h1,
   .article-head h1,
   .post-main h2,
   .post-main p {
@@ -1009,7 +1127,8 @@ pre {
   }
 
   .archive-item,
-  .about-grid {
+  .about-grid,
+  .upload-grid {
     grid-template-columns: 1fr;
   }
 }

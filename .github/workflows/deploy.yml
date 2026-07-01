@@ -1,0 +1,58 @@
+name: Deploy Null Observatory
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Convert uploaded DOCX posts
+        shell: pwsh
+        run: |
+          $docxFiles = Get-ChildItem -Path content/posts -Recurse -Filter source.docx -ErrorAction SilentlyContinue
+          foreach ($file in $docxFiles) {
+            $slug = Split-Path $file.DirectoryName -Leaf
+            $title = $slug
+            $metaPath = Join-Path $file.DirectoryName "upload.json"
+            if (Test-Path $metaPath) {
+              try {
+                $meta = Get-Content $metaPath -Raw | ConvertFrom-Json
+                if ($meta.title) { $title = [string]$meta.title }
+              } catch {
+                Write-Host "Ignoring invalid metadata at $metaPath"
+              }
+            }
+            npm run import:docx -- "$($file.FullName)" --slug "$slug" --title "$title"
+          }
+          if (git status --porcelain content/posts) {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add content/posts
+            git commit -m "Convert uploaded DOCX posts"
+            git push
+          }
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler pages deploy dist --project-name null-observatory --branch main --commit-dirty=true

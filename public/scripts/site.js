@@ -79,3 +79,53 @@ if (progress) {
   updateProgress();
   window.addEventListener('scroll', updateProgress, { passive: true });
 }
+
+const uploadForm = document.querySelector('[data-upload-form]');
+if (uploadForm) {
+  const articleInput = uploadForm.querySelector('input[name="article"]');
+  const imagesInput = uploadForm.querySelector('input[name="images"]');
+  const articleLabel = uploadForm.querySelector('[data-article-file]');
+  const imagesLabel = uploadForm.querySelector('[data-image-files]');
+  const output = uploadForm.querySelector('[data-upload-output]');
+  const submit = uploadForm.querySelector('.upload-submit');
+
+  articleInput?.addEventListener('change', () => {
+    articleLabel.textContent = articleInput.files?.[0]?.name || '选择 Markdown 或 DOCX';
+  });
+
+  imagesInput?.addEventListener('change', () => {
+    const count = imagesInput.files?.length ?? 0;
+    imagesLabel.textContent = count ? `已选择 ${count} 张图片` : '可多选与 Markdown 同目录的图片';
+  });
+
+  uploadForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(uploadForm);
+    const password = formData.get('password');
+    formData.delete('password');
+    output.textContent = '正在上传到观测站...';
+    submit.disabled = true;
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'x-blog-upload-password': password
+        },
+        body: formData
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        throw new Error(result.message || '上传失败。');
+      }
+      output.textContent = `${result.message} slug: ${result.slug}`;
+      uploadForm.reset();
+      articleLabel.textContent = '选择 Markdown 或 DOCX';
+      imagesLabel.textContent = '可多选与 Markdown 同目录的图片';
+    } catch (error) {
+      output.textContent = error.message || '上传失败。';
+    } finally {
+      submit.disabled = false;
+    }
+  });
+}

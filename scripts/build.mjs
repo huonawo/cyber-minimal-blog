@@ -80,7 +80,7 @@ function topbar() {
 function sidebar(posts) {
   const categoryList = categories(posts);
   const tagList = tags(posts);
-  const navIcons = ['home', 'archive', 'tag', 'info'];
+  const navIcons = ['home', 'archive', 'tag', 'upload', 'info'];
   return `<aside class="sidebar" data-sidebar>
     <a class="brand" href="/" aria-label="${escapeHtml(site.name)}"><span class="brand-mark" aria-hidden="true"></span><span>${escapeHtml(site.name)}</span></a>
     <section class="identity">
@@ -177,6 +177,31 @@ function about() {
   return `<section class="about-page"><h1>${escapeHtml(site.name)}</h1><p>这里是 Huonawo 的冷静观测站，用来存放技术笔记、文档处理流程、硬件记录和生活日志。首版内容均可替换，真实文章只需要按约定放入 <code>content/posts</code>。</p><div class="about-grid"><section><h2>内容格式</h2><p>支持带图片的 Markdown，同篇图片放在文章同名目录。DOCX 可通过导入脚本转换为可发布文章。</p></section><section><h2>部署方式</h2><p>站点构建为静态文件，经 GitHub 保存代码，并发布到 Cloudflare Pages 与自定义域名。</p></section></div></section>`;
 }
 
+function upload() {
+  const today = new Date().toISOString().slice(0, 10);
+  return `<section class="upload-page">
+    <header class="upload-head">
+      <p>CONTENT UPLINK</p>
+      <h1>上传文章</h1>
+    </header>
+    <form class="upload-form" data-upload-form>
+      <div class="upload-grid">
+        <label><span>文章标题</span><input name="title" type="text" required placeholder="例如：夜间网络观测"></label>
+        <label><span>文章 Slug</span><input name="slug" type="text" placeholder="night-network-notes"></label>
+        <label><span>日期</span><input name="date" type="date" value="${today}"></label>
+        <label><span>分类</span><input name="category" type="text" value="技术"></label>
+      </div>
+      <label><span>标签</span><input name="tags" type="text" placeholder="Markdown, 笔记, 网络"></label>
+      <label><span>摘要</span><textarea name="summary" rows="3" placeholder="首页文章流显示的简短摘要"></textarea></label>
+      <label><span>上传密码</span><input name="password" type="password" autocomplete="current-password" required></label>
+      <label class="file-drop"><span>文章文件</span><input name="article" type="file" accept=".md,.markdown,.docx" required><b data-article-file>选择 Markdown 或 DOCX</b></label>
+      <label class="file-drop"><span>Markdown 图片</span><input name="images" type="file" accept="image/*" multiple><b data-image-files>可多选与 Markdown 同目录的图片</b></label>
+      <button class="upload-submit" type="submit">提交上传</button>
+      <output class="upload-output" data-upload-output>等待文件输入。</output>
+    </form>
+  </section>`;
+}
+
 async function build() {
   await fs.rm(dist, { recursive: true, force: true });
   await fs.mkdir(dist, { recursive: true });
@@ -188,6 +213,7 @@ async function build() {
   await writePage('', layout({ content: home(posts), posts }));
   await writePage('archive', layout({ title: '归档', content: archive(posts), posts }));
   await writePage('tags', layout({ title: '标签', content: tagIndex(posts), posts }));
+  await writePage('upload', layout({ title: '上传', content: upload(), posts }));
   await writePage('about', layout({ title: '关于', content: about(), posts }));
 
   for (const post of posts) {
@@ -210,6 +236,7 @@ async function build() {
     date: post.date,
     url: `/posts/${post.slug}/`
   }))), 'utf8');
+  await fs.copyFile(path.join(root, 'src/worker.js'), path.join(dist, '_worker.js'));
 
   console.log(`Built ${posts.length} posts into ${dist}`);
 }
