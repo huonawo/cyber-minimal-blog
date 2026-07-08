@@ -1,0 +1,11 @@
+{
+  "title": "PDF Upload Smoke",
+  "slug": "pdf-upload-smoke-20260708123711",
+  "date": "2026-07-08",
+  "category": "验证",
+  "tags": [
+    "PDF",
+    "验证"
+  ],
+  "summary": "PDF upload smoke test with embedded image."
+}
