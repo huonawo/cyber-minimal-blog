@@ -155,9 +155,9 @@ function article(post) {
       ${post.cover ? `<img class="article-cover" src="${post.cover}" alt="" loading="eager">` : ''}
     </header>
     <div class="pdf-viewer-wrap">
-      <object data="/post-assets/${post.slug}/source.pdf" type="application/pdf" class="pdf-embed">
+      <iframe src="/post-assets/${post.slug}/source.pdf" class="pdf-embed" title="${escapeHtml(post.title)}" loading="lazy">
         <p class="pdf-fallback">无法内嵌显示 PDF，请<a href="/post-assets/${post.slug}/source.pdf">下载查看</a>。</p>
-      </object>
+      </iframe>
     </div>
     <div class="related-tags pdf-tags">${post.tags.map((tag) => `<a href="/tags/${enc(tag)}/">${escapeHtml(tag)}</a>`).join('')}</div>
     <a class="backtop" href="#content">回到顶部</a>
