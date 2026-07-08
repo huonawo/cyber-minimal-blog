@@ -1,9 +1,9 @@
 ---
-title: "linux提权基础"
+title: "Linux提权基础"
 date: 2026-07-08
 category: "技术"
-tags: ["ctf"]
-summary: "linux提权"
+tags: ["提权"]
+summary: "linux简单提权"
 source: "markdown"
 ---
 
