@@ -80,7 +80,7 @@ function topbar() {
 function sidebar(posts) {
   const categoryList = categories(posts);
   const tagList = tags(posts);
-  const navIcons = ['home', 'archive', 'tag', 'upload', 'info'];
+  const navIcons = ['home', 'archive', 'tag', 'upload', 'manage', 'info'];
   return `<aside class="sidebar" data-sidebar>
     <a class="brand" href="/" aria-label="${escapeHtml(site.name)}"><span class="brand-mark" aria-hidden="true"></span><span>${escapeHtml(site.name)}</span></a>
     <section class="identity">
@@ -166,7 +166,7 @@ function article(post) {
 }
 
 function archive(posts) {
-  return `<section class="listing-page"><h1>文章归档</h1>${years(posts).map(([year, items]) => `<section class="archive-year"><h2>${year}</h2><div>${items.map((post) => `<a class="archive-item" href="/posts/${post.slug}/"><time datetime="${post.date}">${formatDate(post.date)}</time><span>${escapeHtml(post.title)}</span><b>${escapeHtml(post.category)}</b></a>`).join('')}</div></section>`).join('')}</section>`;
+  return `<section class="listing-page"><h1>文章归档</h1>${years(posts).map(([year, items]) => `<section class="archive-year"><h2>${year}</h2><div>${items.map((post) => `<a class="archive-item" href="/posts/${post.slug}/"><time datetime="${post.date}">${formatDate(post.date)}</time><span>${escapeHtml(post.title)}${post.archived ? '<em>已归档</em>' : ''}</span><b>${escapeHtml(post.category)}</b></a>`).join('')}</div></section>`).join('')}</section>`;
 }
 
 function tagIndex(posts) {
@@ -185,25 +185,49 @@ function upload() {
       <h1>上传文章</h1>
     </header>
     <form class="upload-form" data-upload-form>
-      <div class="upload-grid">
-        <label><span>文章标题</span><input name="title" type="text" required placeholder="例如：夜间网络观测"></label>
-        <label><span>文章 Slug</span><input name="slug" type="text" placeholder="night-network-notes"></label>
-        <label><span>日期</span><input name="date" type="date" value="${today}"></label>
-        <label><span>分类</span><input name="category" type="text" value="技术"></label>
-      </div>
-      <label><span>标签</span><input name="tags" type="text" placeholder="Markdown, 笔记, 网络"></label>
-      <label><span>摘要</span><textarea name="summary" rows="3" placeholder="首页文章流显示的简短摘要"></textarea></label>
+      <label class="file-drop"><span>文章文件</span><input name="article" type="file" accept=".md,.markdown,.docx,.pdf" required><b data-article-file>选择 Markdown、DOCX 或 PDF</b></label>
       <label><span>上传密码</span><input name="password" type="password" autocomplete="current-password" required></label>
-      <label class="file-drop"><span>文章文件</span><input name="article" type="file" accept=".md,.markdown,.docx" required><b data-article-file>选择 Markdown 或 DOCX</b></label>
-      <label class="file-drop"><span>Markdown 图片</span><input name="images" type="file" accept="image/*" multiple><b data-image-files>可多选与 Markdown 同目录的图片</b></label>
-      <div class="upload-tools">
-        <button type="button" data-pick-image-dir>选择图片目录匹配</button>
-        <input data-image-folder type="file" accept="image/*" webkitdirectory multiple hidden>
-        <p data-image-report>Markdown 图片会在提交前自动扫描；内嵌 base64 图片会自动提取。</p>
-      </div>
+      <details class="upload-details">
+        <summary>文章信息（可选）</summary>
+        <div class="upload-grid">
+          <label><span>文章标题</span><input name="title" type="text" placeholder="默认使用文件名"></label>
+          <label><span>文章 Slug</span><input name="slug" type="text" placeholder="默认自动生成"></label>
+          <label><span>日期</span><input name="date" type="date" value="${today}"></label>
+          <label><span>分类</span><input name="category" type="text" placeholder="默认：技术"></label>
+        </div>
+        <label><span>标签</span><input name="tags" type="text" placeholder="Markdown, 笔记, 网络"></label>
+        <label><span>摘要</span><textarea name="summary" rows="3" placeholder="首页文章流显示的简短摘要"></textarea></label>
+      </details>
+      <details class="upload-details">
+        <summary>Markdown 图片（可选）</summary>
+        <label class="file-drop"><span>图片文件</span><input name="images" type="file" accept="image/*" multiple><b data-image-files>可选；公网图和 base64 图会自动导入</b></label>
+        <div class="upload-tools">
+          <button type="button" data-pick-image-dir>选择图片目录匹配</button>
+          <input data-image-folder type="file" accept="image/*" webkitdirectory multiple hidden>
+          <p data-image-report>Markdown 图片会自动扫描；PDF 会在部署时提取文字和图片。</p>
+        </div>
+      </details>
       <button class="upload-submit" type="submit">提交上传</button>
       <output class="upload-output" data-upload-output>等待文件输入。</output>
     </form>
+  </section>`;
+}
+
+function manage() {
+  return `<section class="manage-page">
+    <header class="upload-head">
+      <p>CONTENT CONTROL</p>
+      <h1>文章管理</h1>
+    </header>
+    <form class="manage-login" data-manage-login>
+      <label><span>上传密码</span><input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="upload-submit" type="submit">载入文章</button>
+    </form>
+    <div class="manage-toolbar" data-manage-toolbar hidden>
+      <button type="button" data-manage-refresh>刷新列表</button>
+      <span data-manage-count>等待载入。</span>
+    </div>
+    <div class="manage-list" data-manage-list></div>
   </section>`;
 }
 
@@ -215,25 +239,27 @@ async function build() {
   await fs.copyFile(path.join(root, 'src/styles/global.css'), path.join(dist, 'styles/global.css'));
 
   const posts = await loadPosts();
-  await writePage('', layout({ content: home(posts), posts }));
-  await writePage('archive', layout({ title: '归档', content: archive(posts), posts }));
-  await writePage('tags', layout({ title: '标签', content: tagIndex(posts), posts }));
-  await writePage('upload', layout({ title: '上传', content: upload(), posts }));
-  await writePage('about', layout({ title: '关于', content: about(), posts }));
+  const activePosts = posts.filter((post) => !post.archived);
+  await writePage('', layout({ content: home(activePosts), posts: activePosts }));
+  await writePage('archive', layout({ title: '归档', content: archive(posts), posts: activePosts }));
+  await writePage('tags', layout({ title: '标签', content: tagIndex(activePosts), posts: activePosts }));
+  await writePage('upload', layout({ title: '上传', content: upload(), posts: activePosts }));
+  await writePage('manage', layout({ title: '管理', content: manage(), posts: activePosts }));
+  await writePage('about', layout({ title: '关于', content: about(), posts: activePosts }));
 
   for (const post of posts) {
-    await writePage(path.join('posts', post.slug), layout({ title: post.title, description: post.summary, content: article(post), posts, pageClass: 'article-page' }));
+    await writePage(path.join('posts', post.slug), layout({ title: post.title, description: post.summary, content: article(post), posts: activePosts, pageClass: 'article-page' }));
   }
-  for (const [tag] of tags(posts)) {
-    const matching = posts.filter((post) => post.tags.includes(tag));
-    await writePage(path.join('tags', tag), layout({ title: `标签：${tag}`, content: `<section class="home-intro compact"><p>标签</p><h1>${escapeHtml(tag)}</h1></section>${postFeed(matching)}`, posts }));
+  for (const [tag] of tags(activePosts)) {
+    const matching = activePosts.filter((post) => post.tags.includes(tag));
+    await writePage(path.join('tags', tag), layout({ title: `标签：${tag}`, content: `<section class="home-intro compact"><p>标签</p><h1>${escapeHtml(tag)}</h1></section>${postFeed(matching)}`, posts: activePosts }));
   }
-  for (const [category] of categories(posts)) {
-    const matching = posts.filter((post) => post.category === category);
-    await writePage(path.join('categories', category), layout({ title: `分类：${category}`, content: `<section class="home-intro compact"><p>分类</p><h1>${escapeHtml(category)}</h1></section>${postFeed(matching)}`, posts }));
+  for (const [category] of categories(activePosts)) {
+    const matching = activePosts.filter((post) => post.category === category);
+    await writePage(path.join('categories', category), layout({ title: `分类：${category}`, content: `<section class="home-intro compact"><p>分类</p><h1>${escapeHtml(category)}</h1></section>${postFeed(matching)}`, posts: activePosts }));
   }
 
-  await fs.writeFile(path.join(dist, 'search.json'), JSON.stringify(posts.map((post) => ({
+  await fs.writeFile(path.join(dist, 'search.json'), JSON.stringify(activePosts.map((post) => ({
     title: post.title,
     summary: post.summary,
     category: post.category,

@@ -203,8 +203,8 @@ if (uploadForm) {
   }
 
   articleInput?.addEventListener('change', () => {
-    articleLabel.textContent = articleInput.files?.[0]?.name || '选择 Markdown 或 DOCX';
-    imageReport.textContent = 'Markdown 图片会在提交前自动扫描；内嵌 base64 图片会自动提取。';
+    articleLabel.textContent = articleInput.files?.[0]?.name || '选择 Markdown、DOCX 或 PDF';
+    imageReport.textContent = 'Markdown 图片会自动扫描；PDF 会在部署时提取文字和图片。';
   });
 
   imagesInput?.addEventListener('change', () => {
@@ -246,13 +246,119 @@ if (uploadForm) {
       output.textContent = `${result.message} slug: ${result.slug}`;
       uploadForm.reset();
       folderImages = [];
-      articleLabel.textContent = '选择 Markdown 或 DOCX';
-      imagesLabel.textContent = '可多选与 Markdown 同目录的图片';
-      imageReport.textContent = 'Markdown 图片会在提交前自动扫描；内嵌 base64 图片会自动提取。';
+      articleLabel.textContent = '选择 Markdown、DOCX 或 PDF';
+      imagesLabel.textContent = '可选；公网图和 base64 图会自动导入';
+      imageReport.textContent = 'Markdown 图片会自动扫描；PDF 会在部署时提取文字和图片。';
     } catch (error) {
       output.textContent = error.message || '上传失败。';
     } finally {
       submit.disabled = false;
+    }
+  });
+}
+
+const manageLogin = document.querySelector('[data-manage-login]');
+if (manageLogin) {
+  const list = document.querySelector('[data-manage-list]');
+  const toolbar = document.querySelector('[data-manage-toolbar]');
+  const count = document.querySelector('[data-manage-count]');
+  const refresh = document.querySelector('[data-manage-refresh]');
+  let managePassword = '';
+
+  function escapeText(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function postBadge(post) {
+    if (post.draft) return '<span class="manage-badge">草稿</span>';
+    if (post.archived) return '<span class="manage-badge is-archived">已归档</span>';
+    return '<span class="manage-badge is-live">公开</span>';
+  }
+
+  function renderManagePosts(posts) {
+    count.textContent = `${posts.length} 篇文章`;
+    list.innerHTML = posts.length
+      ? posts.map((post) => `<article class="manage-item" data-slug="${post.slug}">
+        <div>
+          <h2>${escapeText(post.title)}</h2>
+          <p><span>${escapeText(post.date || '无日期')}</span><span>${escapeText(post.category)}</span><span>${escapeText(post.slug)}</span>${postBadge(post)}</p>
+        </div>
+        <div class="manage-actions">
+          <a href="/posts/${post.slug}/" target="_blank" rel="noreferrer">查看</a>
+          <button type="button" data-archive="${post.slug}" data-archived="${post.archived ? 'true' : 'false'}">${post.archived ? '取消归档' : '归档'}</button>
+          <button type="button" data-delete="${post.slug}">删除</button>
+        </div>
+      </article>`).join('')
+      : '<p class="manage-empty">暂无文章。</p>';
+  }
+
+  async function manageRequest(path, options = {}) {
+    const response = await fetch(path, {
+      ...options,
+      headers: {
+        'x-blog-upload-password': managePassword,
+        ...(options.headers ?? {})
+      }
+    });
+    const result = await response.json();
+    if (!response.ok || !result.ok) throw new Error(result.message || '管理操作失败。');
+    return result;
+  }
+
+  async function loadManagePosts() {
+    list.innerHTML = '<p class="manage-empty">正在载入文章列表...</p>';
+    const result = await manageRequest('/api/posts');
+    renderManagePosts(result.posts);
+    toolbar.hidden = false;
+  }
+
+  manageLogin.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    managePassword = new FormData(manageLogin).get('password') || '';
+    try {
+      await loadManagePosts();
+    } catch (error) {
+      list.innerHTML = `<p class="manage-empty">${error.message || '载入失败。'}</p>`;
+    }
+  });
+
+  refresh?.addEventListener('click', async () => {
+    try {
+      await loadManagePosts();
+    } catch (error) {
+      list.innerHTML = `<p class="manage-empty">${error.message || '刷新失败。'}</p>`;
+    }
+  });
+
+  list.addEventListener('click', async (event) => {
+    const archiveButton = event.target.closest('[data-archive]');
+    const deleteButton = event.target.closest('[data-delete]');
+    try {
+      if (archiveButton) {
+        const slug = archiveButton.dataset.archive;
+        const nextArchived = archiveButton.dataset.archived !== 'true';
+        archiveButton.disabled = true;
+        await manageRequest(`/api/posts/${encodeURIComponent(slug)}/archive`, {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ archived: nextArchived })
+        });
+        await loadManagePosts();
+      }
+      if (deleteButton) {
+        const slug = deleteButton.dataset.delete;
+        if (!confirm(`确认删除文章 ${slug}？这个操作会从 GitHub 移除文章目录。`)) return;
+        deleteButton.disabled = true;
+        await manageRequest(`/api/posts/${encodeURIComponent(slug)}/delete`, { method: 'DELETE' });
+        await loadManagePosts();
+      }
+    } catch (error) {
+      list.insertAdjacentHTML('afterbegin', `<p class="manage-empty">${error.message || '操作失败。'}</p>`);
     }
   });
 }

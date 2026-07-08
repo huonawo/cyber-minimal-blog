@@ -239,6 +239,7 @@ export async function loadPosts({ includeDrafts = false } = {}) {
         summary: String(frontmatter.summary ?? ''),
         cover: frontmatter.cover ? (/^(https?:|\/)/.test(frontmatter.cover) ? frontmatter.cover : postAssetUrl(slug, frontmatter.cover)) : '',
         draft: Boolean(frontmatter.draft),
+        archived: Boolean(frontmatter.archived),
         source: String(frontmatter.source ?? 'markdown'),
         html: rendered.html,
         toc: rendered.toc,

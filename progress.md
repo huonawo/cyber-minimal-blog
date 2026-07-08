@@ -133,3 +133,17 @@
 ### Notes
 - Changed files: `scripts/build.mjs` adds the upload page controls; `public/scripts/site.js` scans and rewrites Markdown image references before upload; `src/worker.js` rewrites direct-upload Markdown image references by uploaded filename; `src/styles/global.css` styles the matching controls; `docs/content-workflow.md` documents browser limits and the new Markdown image handling behavior; `progress.md` records this round.
 - Rollback: revert the next Git commit and redeploy; existing manual image upload and DOCX upload behavior will remain available from the previous deployed version.
+
+## 2026-07-08 - Task: Add smarter Markdown image import
+### What was done
+- Added a local Markdown import/publish command for Markdown files that reference local absolute paths, relative image files, `file://` images, `data:image/...` images, and remote image URLs.
+- Enhanced the upload API so browser uploads can automatically extract embedded base64 images and download remote image URLs, while rejecting unmatched local image paths with a clear local-import instruction instead of publishing broken images.
+- Updated upload-page copy and content workflow documentation to separate what the browser can do automatically from what requires the local publish command.
+
+### Testing
+- Parsed `src/worker.js`, `scripts/import-md-local.mjs`, `scripts/build.mjs`, and `public/scripts/site.js` with the Node REPL syntax checks; all parsed successfully.
+- Could not run `npm run build`, `npm run import:md`, `npm run deploy`, or `git status` in this turn because the current PowerShell runner failed to start with `CreateProcessAsUserW failed: 5` after the sandbox policy changed.
+
+### Notes
+- Changed files: `src/worker.js` restores the Pages Worker and adds remote/base64 image extraction plus local-path rejection; `scripts/import-md-local.mjs` adds the local Markdown image importer and optional push workflow; `package.json` adds `import:md` and `publish:md`; `scripts/build.mjs` updates upload-page guidance; `public/scripts/site.js` updates upload UI reset text; `docs/content-workflow.md` documents the new one-command Markdown publishing path; `progress.md` records this round.
+- Rollback: revert this commit or remove `scripts/import-md-local.mjs`, remove `import:md` and `publish:md` from `package.json`, and restore the previous `src/worker.js`, upload-page copy, and documentation before redeploying.

@@ -8,7 +8,10 @@
     "dev": "node scripts/build.mjs --watch",
     "preview": "node scripts/build.mjs && npx wrangler pages dev dist",
     "sync:assets": "node scripts/sync-post-assets.mjs",
+    "import:md": "node scripts/import-md-local.mjs",
+    "publish:md": "node scripts/import-md-local.mjs --push",
     "import:docx": "node scripts/import-docx.mjs",
+    "import:pdf": "python scripts/import-pdf.py",
     "deploy": "node scripts/build.mjs && node scripts/deploy-cloudflare-api.mjs"
   }
 }
