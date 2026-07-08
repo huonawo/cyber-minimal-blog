@@ -1173,6 +1173,147 @@ pre {
   color: var(--muted);
 }
 
+/* ── Tag index page ── */
+.tag-index-head {
+  margin-bottom: 36px;
+}
+
+.tag-index-label {
+  margin: 0 0 12px;
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.tag-index-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.tag-index-stats span {
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  background: rgba(156, 242, 255, 0.04);
+}
+
+.index-cloud a.tag-xl {
+  font-size: 22px;
+  color: var(--cyan);
+  border-color: rgba(156, 242, 255, 0.4);
+  background: rgba(156, 242, 255, 0.08);
+}
+
+.index-cloud a.tag-l {
+  font-size: 18px;
+  color: #d9edf4;
+}
+
+.index-cloud a:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(156, 242, 255, 0.12);
+  transform: translateY(-1px);
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.tag-page-stats {
+  margin-top: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.tag-page-stats span {
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  background: rgba(156, 242, 255, 0.04);
+}
+
+/* ── Related tags on tag detail pages ── */
+.tag-related {
+  max-width: 920px;
+  margin: 40px 0 0;
+  padding: 24px clamp(20px, 5vw, 70px);
+  border-top: 1px solid var(--line);
+}
+
+.tag-related h2 {
+  margin: 0 0 16px;
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.related-tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.related-tag-cloud a {
+  border: 1px solid rgba(144, 225, 255, 0.2);
+  padding: 6px 10px;
+  color: var(--muted);
+  font-size: 13px;
+  background: rgba(156, 242, 255, 0.03);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.related-tag-cloud a:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+/* ── PDF viewer ── */
+.pdf-viewer-wrap {
+  margin: 0 0 40px;
+  border: 1px solid var(--line);
+  background: rgba(2, 6, 10, 0.72);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.24);
+}
+
+.pdf-embed {
+  width: 100%;
+  height: 82vh;
+  min-height: 600px;
+  display: block;
+  border: 0;
+}
+
+.pdf-fallback {
+  padding: 48px;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.pdf-fallback a {
+  color: var(--cyan);
+  border-bottom: 1px solid rgba(156, 242, 255, 0.36);
+}
+
+.pdf-tags {
+  margin-top: 30px;
+}
+
+@media (max-width: 980px) {
+  .pdf-embed {
+    height: 70vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .pdf-embed {
+    height: 60vh;
+    min-height: 400px;
+  }
+}
+
 @keyframes drift {
   from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-120px, 120px, 0); }

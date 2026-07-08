@@ -26,7 +26,7 @@ https://null-observatory.pages.dev/upload/
 
 网页端可以自动处理 Markdown 里的 `data:image/...` 内嵌图片和公网图片地址；如果 Markdown 引用的是 `C:\...`、`D:\...`、`file://...` 这类本机路径，请使用下面的“本机智能导入”，因为浏览器不能直接读取你电脑里的任意本地文件。
 
-PDF 上传后会先保存为 `content/posts/<slug>/source.pdf`，GitHub Actions 会用 `scripts/import-pdf.py` 提取文字和嵌入图片，生成 `index.md` 和 `pdf-image-*.png/jpg` 等图片文件，再部署到 Cloudflare Pages。
+PDF 上传后会保存为 `content/posts/<slug>/source.pdf`，同时生成 `index.md`（标记 `source: "pdf"`）。GitHub Actions 直接部署，不做格式转换。文章页面会内嵌 PDF 阅读器，直接显示 PDF 原文。
 
 Markdown 网页上传时会自动扫描正文图片引用：
 - `data:image/...` 内嵌图片会被自动提取成同目录图片文件。
@@ -120,22 +120,32 @@ content/posts/my-draft/docx-image-01.png
 
 DOCX 支持标题、段落、列表、表格和内嵌图片。首版优先转换成适合博客阅读的语义结构，不追求还原 Word 的复杂版式。
 
-## PDF 导入
+## PDF 文章
 
-网页上传 PDF 后会自动转换。也可以本机运行：
+网页上传 PDF 后会直接保存原文件并生成带 `source: "pdf"` 标记的 `index.md`，文章页面会内嵌 PDF 阅读器显示原文，不做格式转换。
 
-```bash
-npm run import:pdf -- ./draft.pdf --slug my-pdf --title "文章标题"
-```
-
-脚本会生成：
+如果需要本机导入 PDF，可以手动创建文章目录：
 
 ```text
-content/posts/my-pdf/index.md
-content/posts/my-pdf/pdf-image-01.png
+content/posts/my-pdf/
+├── index.md    (frontmatter 中设置 source: "pdf")
+└── source.pdf
 ```
 
-PDF 支持提取可选择文本和嵌入图片。扫描版 PDF 如果没有文字层，正文可能只剩图片；这种情况需要先 OCR 后再上传。
+`index.md` 示例：
+
+```markdown
+---
+title: "文章标题"
+date: 2026-07-08
+category: "技术"
+tags: ["PDF"]
+summary: "文章摘要"
+source: "pdf"
+---
+```
+
+构建脚本会自动将 `source.pdf` 复制到公开资源目录，文章页面使用 `<object>` 标签内嵌显示。
 
 ## 部署
 

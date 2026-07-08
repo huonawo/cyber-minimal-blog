@@ -204,7 +204,7 @@ if (uploadForm) {
 
   articleInput?.addEventListener('change', () => {
     articleLabel.textContent = articleInput.files?.[0]?.name || '选择 Markdown、DOCX 或 PDF';
-    imageReport.textContent = 'Markdown 图片会自动扫描；PDF 会在部署时提取文字和图片。';
+    imageReport.textContent = 'Markdown 图片会自动扫描；PDF 会以原始格式内嵌显示。';
   });
 
   imagesInput?.addEventListener('change', () => {
@@ -248,7 +248,7 @@ if (uploadForm) {
       folderImages = [];
       articleLabel.textContent = '选择 Markdown、DOCX 或 PDF';
       imagesLabel.textContent = '可选；公网图和 base64 图会自动导入';
-      imageReport.textContent = 'Markdown 图片会自动扫描；PDF 会在部署时提取文字和图片。';
+      imageReport.textContent = 'Markdown 图片会自动扫描；PDF 会以原始格式内嵌显示。';
     } catch (error) {
       output.textContent = error.message || '上传失败。';
     } finally {

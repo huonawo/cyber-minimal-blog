@@ -4,7 +4,7 @@ import path from 'node:path';
 const root = process.cwd();
 const postsDir = path.join(root, 'content/posts');
 const publicDir = path.join(root, 'public/post-assets');
-const ignored = new Set(['index.md', 'index.mdx']);
+const ignored = new Set(['index.md', 'index.mdx', 'upload.json']);
 
 async function exists(target) {
   try {

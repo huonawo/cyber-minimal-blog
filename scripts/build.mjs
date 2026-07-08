@@ -146,6 +146,23 @@ function home(posts) {
 }
 
 function article(post) {
+  if (post.source === 'pdf') {
+    return `<div class="reading-progress" data-reading-progress aria-hidden="true"></div>
+  <article class="article-shell">
+    <header class="article-head">
+      <h1>${escapeHtml(post.title)}</h1>
+      <div class="article-meta"><time datetime="${post.date}">${formatDate(post.date)}</time><span>${escapeHtml(post.category)}</span><span>${post.tags.map(escapeHtml).join(' · ')}</span></div>
+      ${post.cover ? `<img class="article-cover" src="${post.cover}" alt="" loading="eager">` : ''}
+    </header>
+    <div class="pdf-viewer-wrap">
+      <object data="/post-assets/${post.slug}/source.pdf" type="application/pdf" class="pdf-embed">
+        <p class="pdf-fallback">无法内嵌显示 PDF，请<a href="/post-assets/${post.slug}/source.pdf">下载查看</a>。</p>
+      </object>
+    </div>
+    <div class="related-tags pdf-tags">${post.tags.map((tag) => `<a href="/tags/${enc(tag)}/">${escapeHtml(tag)}</a>`).join('')}</div>
+    <a class="backtop" href="#content">回到顶部</a>
+  </article>`;
+  }
   return `<div class="reading-progress" data-reading-progress aria-hidden="true"></div>
   <article class="article-shell">
     <header class="article-head">
@@ -170,7 +187,22 @@ function archive(posts) {
 }
 
 function tagIndex(posts) {
-  return `<section class="listing-page"><h1>标签</h1><div class="index-cloud">${tags(posts).map(([tag, count]) => `<a href="/tags/${enc(tag)}/">${escapeHtml(tag)}<span>${count}</span></a>`).join('')}</div></section>`;
+  const tagList = tags(posts);
+  const counts = tagList.map(([, count]) => count);
+  const maxCount = Math.max(...counts, 1);
+  const minCount = Math.min(...counts, 1);
+  return `<section class="listing-page tag-index">
+    <header class="tag-index-head">
+      <p class="tag-index-label">SIGNAL INDEX</p>
+      <h1>标签</h1>
+      <div class="tag-index-stats"><span>${tagList.length} 个标签</span><span>${posts.length} 篇文章</span></div>
+    </header>
+    <div class="index-cloud">${tagList.map(([tag, count]) => {
+      const ratio = (count - minCount) / (maxCount - minCount || 1);
+      const sizeClass = ratio > 0.6 ? 'tag-xl' : ratio > 0.3 ? 'tag-l' : '';
+      return `<a href="/tags/${enc(tag)}/" class="${sizeClass}">${escapeHtml(tag)}<span>${count}</span></a>`;
+    }).join('')}</div>
+  </section>`;
 }
 
 function about() {
@@ -204,7 +236,7 @@ function upload() {
         <div class="upload-tools">
           <button type="button" data-pick-image-dir>选择图片目录匹配</button>
           <input data-image-folder type="file" accept="image/*" webkitdirectory multiple hidden>
-          <p data-image-report>Markdown 图片会自动扫描；PDF 会在部署时提取文字和图片。</p>
+          <p data-image-report>Markdown 图片会自动扫描；PDF 会以原始格式内嵌显示。</p>
         </div>
       </details>
       <button class="upload-submit" type="submit">提交上传</button>
@@ -252,7 +284,15 @@ async function build() {
   }
   for (const [tag] of tags(activePosts)) {
     const matching = activePosts.filter((post) => post.tags.includes(tag));
-    await writePage(path.join('tags', tag), layout({ title: `标签：${tag}`, content: `<section class="home-intro compact"><p>标签</p><h1>${escapeHtml(tag)}</h1></section>${postFeed(matching)}`, posts: activePosts }));
+    const relatedMap = new Map();
+    for (const post of matching) {
+      for (const t of post.tags) {
+        if (t !== tag) relatedMap.set(t, (relatedMap.get(t) ?? 0) + 1);
+      }
+    }
+    const related = [...relatedMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+    const relatedHtml = related.length ? `<section class="tag-related"><h2>相关标签</h2><div class="related-tag-cloud">${related.map(([t]) => `<a href="/tags/${enc(t)}/">${escapeHtml(t)}</a>`).join('')}</div></section>` : '';
+    await writePage(path.join('tags', tag), layout({ title: `标签：${tag}`, content: `<section class="home-intro compact"><p>标签</p><h1>${escapeHtml(tag)}</h1><div class="tag-page-stats"><span>${matching.length} 篇文章</span></div></section>${postFeed(matching)}${relatedHtml}`, posts: activePosts }));
   }
   for (const [category] of categories(activePosts)) {
     const matching = activePosts.filter((post) => post.category === category);

@@ -167,3 +167,30 @@
 ### Notes
 - Changed files: `.github/workflows/deploy.yml` installs PyMuPDF and converts uploaded PDFs; `scripts/import-pdf.py` converts PDF text and images into a post; `package.json` adds `import:pdf`; `src/worker.js` accepts PDF uploads; `scripts/build.mjs` simplifies the upload form and accepts PDF; `public/scripts/site.js` updates upload labels; `src/styles/global.css` styles the collapsed upload sections; `docs/content-workflow.md` documents PDF upload and simplified inputs; `progress.md` records this round.
 - Rollback: revert commit `fc1b6c2` and this progress-only commit, then run `npm run deploy`; this removes PDF upload support and returns the upload form to the previous expanded layout.
+
+## 2026-07-08 - Task: Optimize tag page and PDF direct display
+### What was done
+- Rewrote the tag index page (`/tags/`) with a stats header (tag count + post count), SIGNAL INDEX label, and font-size variation based on post frequency — high-frequency tags render larger (`tag-xl`/`tag-l` classes).
+- Added a "相关标签" (related tags) section to each tag detail page (`/tags/:tag/`), computed from co-occurring tags across matching posts, capped at 12 entries.
+- Added a post-count badge to individual tag page headers.
+- Changed PDF upload flow: the Worker now creates `index.md` with `source: "pdf"` frontmatter directly instead of saving `upload.json` for GitHub Actions to convert. No more PDF-to-Markdown conversion.
+- Added PDF viewer rendering in `article()`: when `post.source === 'pdf'`, the page renders an `<object>` embed pointing to `/post-assets/<slug>/source.pdf` with a download fallback link, skipping the TOC rail.
+- Removed PyMuPDF installation and the PDF conversion block from `.github/workflows/deploy.yml`; DOCX conversion remains unchanged.
+- Added `upload.json` to the `sync-post-assets.mjs` ignore list so it no longer leaks into public assets.
+- Updated front-end upload page text and Worker success message to reflect inline PDF display.
+- Updated `docs/content-workflow.md` PDF section to document the new direct-display behavior.
+- Added CSS for tag index stats, tag size classes, related tag cloud, tag page stats, and the PDF viewer container (`pdf-viewer-wrap`, `pdf-embed`, `pdf-fallback`, responsive height adjustments).
+
+### Testing
+- `node --check` passed for `scripts/build.mjs`, `src/worker.js`, `scripts/sync-post-assets.mjs`, and `public/scripts/site.js`.
+- `npm run build` passed and generated 7 posts.
+- `/tags/index.html` output verified: stats header shows "18 个标签 / 7 篇文章", CTF (count 2) has `tag-xl` class, other tags have default size.
+- `/tags/CTF/index.html` verified: "相关标签" section shows XXE, Web, 渗透测试, 信息泄露.
+- Created a temporary `source: "pdf"` test post, built, and verified `/posts/pdf-render-test/index.html` contains `<object data="/post-assets/pdf-render-test/source.pdf" type="application/pdf" class="pdf-embed">` with fallback link.
+- Verified `source.pdf` is copied to `dist/post-assets/<slug>/source.pdf` and `upload.json` is excluded from public assets.
+- Verified `.github/workflows/deploy.yml` no longer contains `pymupdf`, `import:pdf`, or PDF conversion logic; step renamed to "Convert uploaded DOCX posts".
+- Test post removed and final build produces 7 posts cleanly.
+
+### Notes
+- Changed files: `scripts/build.mjs` rewrites `tagIndex()`, `article()`, tag detail page rendering, and upload help text; `src/worker.js` splits PDF and DOCX upload branches, PDF now creates `index.md` directly; `scripts/sync-post-assets.mjs` adds `upload.json` to ignored set; `public/scripts/site.js` updates PDF description text; `.github/workflows/deploy.yml` removes PyMuPDF setup and PDF conversion block; `src/styles/global.css` adds tag index, related tags, and PDF viewer styles; `docs/content-workflow.md` updates PDF documentation; `progress.md` records this round.
+- Rollback: revert this commit and run `npm run deploy`; PDF uploads will return to the `upload.json` + GitHub Actions conversion flow, and the tag page will revert to the flat cloud without stats or related tags.

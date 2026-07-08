@@ -426,10 +426,20 @@ async function handleUpload(request, env) {
 
   const basePath = `content/posts/${metadata.slug}`;
   const files = [];
-  if (articleExt === '.docx' || articleExt === '.pdf') {
-    const sourceName = articleExt === '.pdf' ? 'source.pdf' : 'source.docx';
+  if (articleExt === '.pdf') {
     files.push({
-      path: `${basePath}/${sourceName}`,
+      path: `${basePath}/source.pdf`,
+      content: await fileToBase64(article),
+      encoding: 'base64'
+    });
+    files.push({
+      path: `${basePath}/index.md`,
+      content: `${frontmatter(metadata, 'pdf')}\n> 本文以 PDF 格式发布，请使用页面内嵌阅读器查看完整内容。\n`,
+      encoding: 'utf-8'
+    });
+  } else if (articleExt === '.docx') {
+    files.push({
+      path: `${basePath}/source.docx`,
       content: await fileToBase64(article),
       encoding: 'base64'
     });
@@ -473,7 +483,7 @@ async function handleUpload(request, env) {
   const commit = await commitFiles(env, files, `Upload post: ${metadata.title}`);
   return json({
     ok: true,
-    message: articleExt === '.docx' ? 'DOCX 已上传，GitHub Actions 会转换并部署。' : articleExt === '.pdf' ? 'PDF 已上传，GitHub Actions 会提取文字和图片后部署。' : 'Markdown 和图片已上传，GitHub Actions 会部署。',
+    message: articleExt === '.docx' ? 'DOCX 已上传，GitHub Actions 会转换并部署。' : articleExt === '.pdf' ? 'PDF 已上传，GitHub Actions 会自动部署，页面将内嵌显示 PDF 原文。' : 'Markdown 和图片已上传，GitHub Actions 会部署。',
     slug: metadata.slug,
     commit: commit.sha,
     files: files.map((file) => file.path)
