@@ -147,3 +147,23 @@
 ### Notes
 - Changed files: `src/worker.js` restores the Pages Worker and adds remote/base64 image extraction plus local-path rejection; `scripts/import-md-local.mjs` adds the local Markdown image importer and optional push workflow; `package.json` adds `import:md` and `publish:md`; `scripts/build.mjs` updates upload-page guidance; `public/scripts/site.js` updates upload UI reset text; `docs/content-workflow.md` documents the new one-command Markdown publishing path; `progress.md` records this round.
 - Rollback: revert this commit or remove `scripts/import-md-local.mjs`, remove `import:md` and `publish:md` from `package.json`, and restore the previous `src/worker.js`, upload-page copy, and documentation before redeploying.
+
+## 2026-07-08 - Task: Add PDF uploads and simplify the upload page
+### What was done
+- Added PDF upload support: uploaded PDFs are saved as `source.pdf`, converted by GitHub Actions with PyMuPDF, and published as Markdown with extracted images in the same post directory.
+- Simplified the upload page so the default flow only requires an article file and upload password; title, slug, date, category, tags, summary, and Markdown image matching now live in optional collapsed sections.
+- Deployed the updated Cloudflare Pages Worker and static output to `null-observatory`.
+
+### Testing
+- `node --check src\worker.js`, `node --check public\scripts\site.js`, `node --check scripts\build.mjs`, and `node --check scripts\import-md-local.mjs` passed.
+- `python -m py_compile scripts\import-pdf.py` passed.
+- Local PDF smoke test generated `content/posts/pdf-smoke-test/index.md` and `pdf-image-01.png`, then the temporary post directory was deleted.
+- `npm run build` passed and built 7 posts after syncing the current remote content.
+- `npm run deploy` succeeded; latest checked preview deployment was `https://86591cea.null-observatory.pages.dev`.
+- Live PDF upload smoke test returned 200 from `/api/upload`, created `source.pdf` and `upload.json`, GitHub Actions converted it, and `https://null-observatory.pages.dev/posts/pdf-upload-smoke-20260708123711/` showed the PDF text while `post-assets/pdf-upload-smoke-20260708123711/pdf-image-01.png` returned 200.
+- The temporary PDF smoke post was deleted through the management API; after the final Cloudflare deployment, the production URL no longer contained `PDF Upload Smoke`.
+- `https://null-observatory.pages.dev/upload/` returned 200 and contained `.pdf`, `文章信息（可选）`, `Markdown 图片（可选）`, and `选择 Markdown、DOCX 或 PDF`.
+
+### Notes
+- Changed files: `.github/workflows/deploy.yml` installs PyMuPDF and converts uploaded PDFs; `scripts/import-pdf.py` converts PDF text and images into a post; `package.json` adds `import:pdf`; `src/worker.js` accepts PDF uploads; `scripts/build.mjs` simplifies the upload form and accepts PDF; `public/scripts/site.js` updates upload labels; `src/styles/global.css` styles the collapsed upload sections; `docs/content-workflow.md` documents PDF upload and simplified inputs; `progress.md` records this round.
+- Rollback: revert commit `fc1b6c2` and this progress-only commit, then run `npm run deploy`; this removes PDF upload support and returns the upload form to the previous expanded layout.
